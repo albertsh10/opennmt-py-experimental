@@ -42,6 +42,8 @@ def configure_process(opt, device_id):
 def main(opt, device_id, batch_queue=None, semaphore=None):
     # NOTE: It's important that ``opt`` has been validated and updated
     # at this point.
+    # TODO(albert) import ASP for SS
+    from .asp import ASP
     configure_process(opt, device_id)
     init_logger(opt.log_file)
     assert len(opt.accum_count) == len(opt.accum_steps), \
@@ -93,6 +95,24 @@ def main(opt, device_id, batch_queue=None, semaphore=None):
 
     # Build optimizer.
     optim = Optimizer.from_opt(model, opt, checkpoint=checkpoint)
+
+    if opt.retrain:
+        # TODO(albert) add nodes for SS
+        import time
+        time1 = time.time()
+        ASP.init_model_for_pruning(model, mask_calculator="m4n2_1d", verbosity=2, whitelist=[torch.nn.Linear, torch.nn.Conv2d], allow_recompute_mask=True)
+        time2 = time.time()
+        # NV Solution
+        # ASP.init_optimizer_for_pruning(optimizer)
+        # Revival Enf Solution
+        ASP.init_revival_sparsity(optim)
+        time3 = time.time()
+        ASP.compute_sparse_masks()
+        time4 = time.time()
+        print('time model ', time2 - time1)
+        print('time opt ', time3 - time2)
+        print('time mask ', time4 - time3)
+    assert(0)
 
     # Build model saver
     model_saver = build_model_saver(model_opt, opt, model, fields, optim)
