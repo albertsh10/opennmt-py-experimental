@@ -1,0 +1,6 @@
+// "/home/albert/.local/lib/python3.7/site-packages/pynvrtc/interface.py"
+54c54,55
+<     return s.encode("utf-8")
+---
+>     # return s.encode("utf-8")
+>     return s

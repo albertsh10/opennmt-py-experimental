@@ -1,0 +1,144 @@
+377a378
+>         # print('check done')
+396,397c397,400
+<     @custom_fwd
+<     def forward(self, u, x, bias, init=None, mask_h=None):
+---
+>     # @custom_fwd
+>     # def forward(self, u, x, bias, init=None, mask_h=None):
+>     @staticmethod
+>     def forward(ctx, u, x, bias, init=None, mask_h=None):
+442,443c445,448
+<     @custom_bwd
+<     def backward(self, grad_h, grad_last):
+---
+>     # @custom_bwd
+>     @staticmethod
+>     # def backward(self, grad_h, grad_last):
+>     def backward(ctx, grad_h, grad_last):
+495a501,598
+> class SRU_Compute2(Function):
+>     @staticmethod
+>     def forward(ctx, u, x, bias, init, mask_h=None):
+>         bidir =  1
+>         length = x.size(0) if x.dim() == 3 else 1
+>         batch = x.size(-2)
+>         d = 500
+>         k = u.size(-1) // d
+>         k_ =  k
+>         ncols = batch * d * bidir
+>         thread_per_block = min(512, ncols)
+>         num_block = (ncols - 1) // thread_per_block + 1
+> 
+>         init_ = x.new(ncols).zero_() if init is None else init
+>         size = (length, batch, d * bidir) if x.dim() == 3 else (batch, d * bidir)
+>         c = x.new(*size)
+>         h = x.new(*size)
+> 
+>         FUNC = SRU_FWD_FUNC
+>         FUNC(args=[
+>             u.contiguous().data_ptr(),
+>             x.contiguous().data_ptr() if k_ == 3 else 0,
+>             bias.data_ptr(),
+>             init_.contiguous().data_ptr(),
+>             mask_h.data_ptr() if mask_h is not None else 0,
+>             length,
+>             batch,
+>             d,
+>             k_,
+>             h.data_ptr(),
+>             c.data_ptr(),
+>             1],
+>             block=(thread_per_block, 1, 1), grid=(num_block, 1, 1),
+>             stream=SRU_STREAM
+>         )
+> 
+>         intermediate = c
+>         ctx.save_for_backward(u, x, bias, init, mask_h,intermediate)
+>         if x.dim() == 2:
+>             last_hidden = c
+>         elif False:
+>             # -> directions x batch x dim
+>             last_hidden = torch.stack((c[-1, :, :d], c[0, :, d:]))
+>         else:
+>             last_hidden = c[-1]
+>         return h, last_hidden
+> 
+>     @staticmethod
+>     def backward(ctx, grad_h, grad_last):
+>         bidir = 1
+>         u, x, bias, init, mask_h, intermediate = ctx.saved_tensors
+>         c = intermediate
+>         length = x.size(0) if x.dim() == 3 else 1
+>         batch = x.size(-2)
+>         d = 500
+>         k = u.size(-1) // d
+>         k_ =  k
+>         ncols = batch * d * bidir
+>         thread_per_block = min(512, ncols)
+>         num_block = (ncols - 1) // thread_per_block + 1
+> 
+>         init_ = x.new(ncols).zero_() if init is None else init
+>         grad_u = u.new(*u.size())
+>         grad_bias = x.new(2, batch, d * bidir)
+>         grad_init = x.new(batch, d * bidir)
+> 
+>         # For DEBUG
+>         # size = (length, batch, x.size(-1)) \
+>         #         if x.dim() == 3 else (batch, x.size(-1))
+>         # grad_x = x.new(*x.size()) if k_ == 3 else x.new(*size).zero_()
+> 
+>         # Normal use
+>         grad_x = x.new(*x.size()) if k_ == 3 else None
+> 
+>         FUNC = SRU_BWD_FUNC 
+>         FUNC(args=[
+>             u.contiguous().data_ptr(),
+>             x.contiguous().data_ptr() if k_ == 3 else 0,
+>             bias.data_ptr(),
+>             init_.contiguous().data_ptr(),
+>             mask_h.data_ptr() if mask_h is not None else 0,
+>             c.data_ptr(),
+>             grad_h.contiguous().data_ptr(),
+>             grad_last.contiguous().data_ptr(),
+>             length,
+>             batch,
+>             d,
+>             k_,
+>             grad_u.data_ptr(),
+>             grad_x.data_ptr() if k_ == 3 else 0,
+>             grad_bias.data_ptr(),
+>             grad_init.data_ptr(),
+>             1],
+>             block=(thread_per_block, 1, 1), grid=(num_block, 1, 1),
+>             stream=SRU_STREAM
+>         )
+>         return grad_u, grad_x, grad_bias.sum(1).view(-1), grad_init, None
+> 
+499a603
+>         self.maybe_load_sru_mod()
+518a623,627
+>     def maybe_load_sru_mod(self):
+>         global SRU_FWD_FUNC
+> 
+>         if SRU_FWD_FUNC is None:
+>             load_sru_mod()
+553,556c662,665
+<             h, c = SRU_Compute(self.activation_type, n_out,
+<                                self.bidirectional)(
+<                                    u, input, self.bias, c0, mask_h
+<             )
+---
+>             # print(self.activation_type)
+>             # print(n_out)
+>             # print(self.bidirectional)
+>             h, c = SRU_Compute2.apply(u, input, self.bias, c0, mask_h)
+558,561c667
+<             h, c = SRU_Compute(self.activation_type, n_out,
+<                                self.bidirectional)(
+<                                    u, input, self.bias, c0
+<             )
+---
+>             h, c = SRU_Compute2.apply(u, input, self.bias, c0)
+562a669
+>         # assert(0)
