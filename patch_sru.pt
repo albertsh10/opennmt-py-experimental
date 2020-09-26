@@ -23,7 +23,7 @@
 >         bidir =  1
 >         length = x.size(0) if x.dim() == 3 else 1
 >         batch = x.size(-2)
->         d = 500
+>         d = 512
 >         k = u.size(-1) // d
 >         k_ =  k
 >         ncols = batch * d * bidir
@@ -71,7 +71,7 @@
 >         c = intermediate
 >         length = x.size(0) if x.dim() == 3 else 1
 >         batch = x.size(-2)
->         d = 500
+>         d = 512
 >         k = u.size(-1) // d
 >         k_ =  k
 >         ncols = batch * d * bidir

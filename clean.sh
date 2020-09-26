@@ -1,0 +1,12 @@
+rm -rf trial_GRU_1
+rm -rf trial_GRU_2
+rm -rf trial_GRU_3
+rm -rf trial_SRU_1
+rm -rf trial_SRU_2
+rm -rf trial_SRU_3
+rm -f translation_log_gru1
+rm -f translation_log_gru2
+rm -f translation_log_gru3
+rm -f translation_log_sru1
+rm -f translation_log_sru2
+rm -f translation_log_sru3

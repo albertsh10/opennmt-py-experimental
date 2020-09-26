@@ -24,10 +24,10 @@ def model_opts(parser):
     # Embedding Options
     group = parser.add_argument_group('Model-Embeddings')
     group.add('--src_word_vec_size', '-src_word_vec_size',
-              type=int, default=500,
+              type=int, default=512,
               help='Word embedding size for src.')
     group.add('--tgt_word_vec_size', '-tgt_word_vec_size',
-              type=int, default=500,
+              type=int, default=512,
               help='Word embedding size for tgt.')
     group.add('--word_vec_size', '-word_vec_size', type=int, default=-1,
               help='Word embedding size for src and tgt.')
@@ -91,11 +91,11 @@ def model_opts(parser):
     group.add('--rnn_size', '-rnn_size', type=int, default=-1,
               help="Size of rnn hidden states. Overwrites "
                    "enc_rnn_size and dec_rnn_size")
-    group.add('--enc_rnn_size', '-enc_rnn_size', type=int, default=500,
+    group.add('--enc_rnn_size', '-enc_rnn_size', type=int, default=512,
               help="Size of encoder rnn hidden states. "
                    "Must be equal to dec_rnn_size except for "
                    "speech-to-text.")
-    group.add('--dec_rnn_size', '-dec_rnn_size', type=int, default=500,
+    group.add('--dec_rnn_size', '-dec_rnn_size', type=int, default=512,
               help="Size of decoder rnn hidden states. "
                    "Must be equal to enc_rnn_size except for "
                    "speech-to-text.")
