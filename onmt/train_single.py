@@ -102,9 +102,6 @@ def main(opt, device_id, batch_queue=None, semaphore=None):
         time1 = time.time()
         ASP.init_model_for_pruning(model, mask_calculator="m4n2_1d", verbosity=2, whitelist=[torch.nn.Linear, torch.nn.Conv2d], allow_recompute_mask=True)
         time2 = time.time()
-        # NV Solution
-        # ASP.init_optimizer_for_pruning(optimizer)
-        # Revival Enf Solution
         ASP.init_revival_sparsity(optim)
         time3 = time.time()
         ASP.compute_sparse_masks()
@@ -112,7 +109,8 @@ def main(opt, device_id, batch_queue=None, semaphore=None):
         print('time model ', time2 - time1)
         print('time opt ', time3 - time2)
         print('time mask ', time4 - time3)
-    assert(0)
+        # NV Solution
+        # ASP.prune_trained_model(model, optim)
 
     # Build model saver
     model_saver = build_model_saver(model_opt, opt, model, fields, optim)
