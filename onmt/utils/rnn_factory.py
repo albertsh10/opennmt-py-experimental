@@ -14,4 +14,7 @@ def rnn_factory(rnn_type, **kwargs):
         rnn = onmt.models.sru.SRU(**kwargs)
     else:
         rnn = getattr(nn, rnn_type)(**kwargs)
+    import inspect
+    print(inspect.getsourcefiles(rnn))
+    assert(0)
     return rnn, no_pack_padded_seq

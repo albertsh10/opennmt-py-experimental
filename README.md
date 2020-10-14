@@ -1,3 +1,9 @@
+inst for dumping data:
+run cmd: nohup bash go_single.sh 2 GRU 1 > _log 2>&1 &
+
+
+
+
 # OpenNMT-py: Open-Source Neural Machine Translation
 
 [![Build Status](https://travis-ci.org/OpenNMT/OpenNMT-py.svg?branch=master)](https://travis-ci.org/OpenNMT/OpenNMT-py)

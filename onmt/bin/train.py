@@ -191,6 +191,7 @@ def _get_parser():
 
 
 def main():
+    assert(0)
     parser = _get_parser()
 
     opt = parser.parse_args()
