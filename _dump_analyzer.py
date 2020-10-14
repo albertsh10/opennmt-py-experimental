@@ -14,7 +14,7 @@ for i in np.arange(start_range, end_range):
     _flat_data = _raw_data[0].flatten()
     exps = np.log2(np.abs(_flat_data.detach().cpu()))
     hist = np.histogram(exps, bins=109, range=(-100.,9.0))
-    newhist = [hist[1].astype(int), hist[0]]
+    newhist = [hist[0], hist[1].astype(int)]
     lhs_list.append(hist[0])
     import pandas
     pandas.DataFrame(newhist).to_csv('./dist_histograms_per_steps/dist_hist_{}_{}.csv'.format(_type, i))
